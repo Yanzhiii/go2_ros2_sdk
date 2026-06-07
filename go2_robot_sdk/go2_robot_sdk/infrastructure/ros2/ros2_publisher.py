@@ -13,7 +13,6 @@ from sensor_msgs.msg import PointCloud2, PointField, JointState
 from sensor_msgs_py import point_cloud2
 from std_msgs.msg import Header
 from nav_msgs.msg import Odometry
-from cv_bridge import CvBridge
 
 from ...domain.interfaces import IRobotDataPublisher
 from ...domain.entities import RobotData, RobotConfig
@@ -31,8 +30,14 @@ class ROS2Publisher(IRobotDataPublisher):
         self.config = config
         self.publishers = publishers
         self.broadcaster = broadcaster
-        self.bridge = CvBridge()
+        self.bridge = self._create_cv_bridge() if self.config.enable_video else None
         self.camera_info = load_camera_info()
+
+    @staticmethod
+    def _create_cv_bridge():
+        from cv_bridge import CvBridge
+
+        return CvBridge()
 
     def publish_odometry(self, robot_data: RobotData) -> None:
         """Publish odometry data"""
@@ -223,6 +228,8 @@ class ROS2Publisher(IRobotDataPublisher):
             camera = robot_data.camera_data
 
             # Convert to ROS Image
+            if self.bridge is None:
+                self.bridge = self._create_cv_bridge()
             ros_image = self.bridge.cv2_to_imgmsg(camera.image, encoding=camera.encoding)
             ros_image.header.stamp = self.node.get_clock().now().to_msg()
 

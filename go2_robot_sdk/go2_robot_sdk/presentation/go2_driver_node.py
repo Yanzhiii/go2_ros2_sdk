@@ -7,7 +7,6 @@ import os
 from typing import Dict, Any
 
 from aiortc import MediaStreamTrack
-from cv_bridge import CvBridge
 
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy
@@ -44,8 +43,7 @@ class Go2DriverNode(Node):
         # Infrastructure initialization
         self.publishers_dict = self._setup_publishers()
         self.broadcaster = TransformBroadcaster(self, qos=QoSProfile(depth=10))
-        self.bridge = CvBridge()
-        
+
         # Architecture layers initialization
         self.ros2_publisher = ROS2Publisher(
             node=self,
